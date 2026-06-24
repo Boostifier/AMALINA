@@ -1,0 +1,85 @@
+@import "tailwindcss";
+
+@theme {
+  --color-ivory: #fbf6f3;
+  --color-cream: #f7ede9;
+  --color-blush: #f4ddd8;
+  --color-blush-deep: #ecc7c1;
+  --color-rosegold: #b76e79;
+  --color-rosegold-dark: #9c5862;
+  --color-mauve: #8c6a6e;
+  --color-charcoal: #2b2422;
+  --color-charcoal-soft: #4a3f3c;
+
+  --font-serif: var(--font-playfair), Georgia, "Times New Roman", serif;
+  --font-sans: var(--font-geist-sans), Arial, Helvetica, sans-serif;
+}
+
+:root {
+  --background: #fbf6f3;
+  --foreground: #2b2422;
+}
+
+* {
+  -webkit-font-smoothing: antialiased;
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+  font-family: var(--font-sans);
+}
+
+::selection {
+  background: #ecc7c1;
+  color: #2b2422;
+}
+
+/* Subtle fade-up animation utility */
+@keyframes fade-up {
+  from {
+    opacity: 0;
+    transform: translateY(16px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-fade-up {
+  animation: fade-up 0.7s ease both;
+}
+
+/* Gentle floating motion for decorative hero cards */
+@keyframes float {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-10px);
+  }
+}
+
+.animate-float {
+  animation: float 6s ease-in-out infinite;
+}
+
+@keyframes spin-slow {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.animate-spin-slow {
+  animation: spin-slow 40s linear infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .animate-fade-up,
+  .animate-float,
+  .animate-spin-slow {
+    animation: none;
+  }
+}
