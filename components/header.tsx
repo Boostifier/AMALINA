@@ -15,9 +15,11 @@ const nav = [
 export default function Header({
   categories,
   userEmail,
+  isAdmin = false,
 }: {
   categories: Category[];
   userEmail: string | null;
+  isAdmin?: boolean;
 }) {
   const { count } = useCart();
   const [open, setOpen] = useState(false);
@@ -32,6 +34,7 @@ export default function Header({
 
   const primaryLinks = [
     ...nav,
+    ...(isAdmin ? [{ href: "/admin", label: "Dashboard admin" }] : []),
     { href: userEmail ? "/compte" : "/connexion", label: userEmail ? "Mon compte" : "Connexion" },
   ];
 
@@ -62,6 +65,15 @@ export default function Header({
         </nav>
 
         <div className="flex items-center gap-3">
+          {isAdmin && (
+            <Link
+              href="/admin"
+              className="hidden items-center gap-1.5 rounded-full bg-charcoal px-4 py-2 text-sm font-medium text-ivory transition-colors hover:bg-charcoal-soft sm:inline-flex"
+            >
+              <DashboardIcon />
+              Dashboard
+            </Link>
+          )}
           <Link
             href={userEmail ? "/compte" : "/connexion"}
             className="hidden text-sm font-medium tracking-wide text-charcoal-soft transition-colors hover:text-rosegold sm:inline-flex"
@@ -199,5 +211,26 @@ export default function Header({
         </nav>
       </div>
     </header>
+  );
+}
+
+function DashboardIcon() {
+  return (
+    <svg
+      width="15"
+      height="15"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.8"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden
+    >
+      <rect x="3" y="3" width="7" height="9" rx="1" />
+      <rect x="14" y="3" width="7" height="5" rx="1" />
+      <rect x="14" y="12" width="7" height="9" rx="1" />
+      <rect x="3" y="16" width="7" height="5" rx="1" />
+    </svg>
   );
 }

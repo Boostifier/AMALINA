@@ -6,7 +6,7 @@ import { CartProvider } from "@/components/cart-context";
 import Header from "@/components/header";
 import Footer from "@/components/footer";
 import { getCategories } from "@/lib/catalog";
-import { createClient } from "@/lib/supabase/server";
+import { getCurrentUser } from "@/lib/auth";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -31,10 +31,9 @@ export default async function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  const supabase = await createClient();
-  const [categories, { data: { user } }] = await Promise.all([
+  const [categories, user] = await Promise.all([
     getCategories(),
-    supabase.auth.getUser(),
+    getCurrentUser(),
   ]);
 
   return (
@@ -44,7 +43,11 @@ export default async function RootLayout({
     >
       <body className="min-h-full flex flex-col bg-ivory text-charcoal">
         <CartProvider>
-          <Header categories={categories} userEmail={user?.email ?? null} />
+          <Header
+            categories={categories}
+            userEmail={user?.email ?? null}
+            isAdmin={user?.profile?.is_admin ?? false}
+          />
           <main className="flex-1">{children}</main>
           <Footer categories={categories} />
         </CartProvider>
