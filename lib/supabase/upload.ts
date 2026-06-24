@@ -33,12 +33,27 @@ export async function uploadImage(file: File, folder = ""): Promise<string> {
     );
   }
 
-  const { error } = await admin.storage
+  const opts = { contentType: file.type || undefined, upsert: true };
+
+  let { error } = await admin.storage
     .from(PRODUCT_IMAGE_BUCKET)
-    .upload(path, file, { contentType: file.type || undefined, upsert: false });
+    .upload(path, file, opts);
+
+  // The bucket may not exist yet (storage migration not applied). The
+  // service-role client can create it, so create it public and retry once.
+  if (error && /bucket not found/i.test(error.message)) {
+    await admin.storage.createBucket(PRODUCT_IMAGE_BUCKET, {
+      public: true,
+      fileSizeLimit: "8MB",
+    });
+    ({ error } = await admin.storage
+      .from(PRODUCT_IMAGE_BUCKET)
+      .upload(path, file, opts));
+  }
 
   if (error) {
-    throw new UploadError("Le téléchargement de l'image a échoué. Réessayez.");
+    // Surface the underlying reason — this page is admin-only.
+    throw new UploadError(`Le téléchargement de l'image a échoué : ${error.message}`);
   }
 
   const { data } = admin.storage.from(PRODUCT_IMAGE_BUCKET).getPublicUrl(path);

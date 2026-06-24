@@ -76,10 +76,29 @@ body {
   animation: spin-slow 40s linear infinite;
 }
 
+/* Slowly shifting gradient background */
+@keyframes gradient-pan {
+  0% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+  100% {
+    background-position: 0% 50%;
+  }
+}
+
+.animate-gradient {
+  background-size: 200% 200%;
+  animation: gradient-pan 14s ease infinite;
+}
+
 @media (prefers-reduced-motion: reduce) {
   .animate-fade-up,
   .animate-float,
-  .animate-spin-slow {
+  .animate-spin-slow,
+  .animate-gradient {
     animation: none;
   }
 }

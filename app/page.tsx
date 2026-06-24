@@ -13,7 +13,7 @@ export default async function Home() {
     <>
       {/* Hero */}
       <section className="relative overflow-hidden">
-        <div className="absolute inset-0 -z-10 bg-gradient-to-br from-blush-deep via-blush to-cream" />
+        <div className="animate-gradient absolute inset-0 -z-10 bg-[linear-gradient(120deg,#f7ede9,#f4ddd8,#e9b9b5,#d99ca0,#e9b9b5,#f4ddd8,#f7ede9)]" />
         <div className="pointer-events-none absolute -right-24 -top-24 -z-10 h-[28rem] w-[28rem] rounded-full bg-rosegold/35 blur-3xl" />
         <div className="pointer-events-none absolute -bottom-32 -left-24 -z-10 h-[28rem] w-[28rem] rounded-full bg-rosegold/25 blur-3xl" />
         <div className="pointer-events-none absolute right-1/4 top-1/3 -z-10 h-72 w-72 rounded-full bg-blush-deep/50 blur-3xl" />
