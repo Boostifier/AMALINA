@@ -66,7 +66,7 @@ export default async function ProductPage({
       <div className="grid gap-10 lg:grid-cols-2 lg:gap-16">
         <ProductImage
           product={product}
-          className="aspect-square w-full rounded-3xl"
+          className="aspect-square w-full rounded-3xl transition-transform duration-500 hover:scale-[1.02]"
         />
 
         <div className="flex flex-col">

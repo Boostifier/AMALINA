@@ -17,30 +17,46 @@ export const metadata: Metadata = {
 export default async function ProduitsPage({
   searchParams,
 }: {
-  searchParams: Promise<{ categorie?: string }>;
+  searchParams: Promise<{ categorie?: string; q?: string }>;
 }) {
-  const { categorie } = await searchParams;
+  const { categorie, q } = await searchParams;
   const [categories, activeCat] = await Promise.all([
     getCategories(),
     categorie ? getCategory(categorie) : Promise.resolve(undefined),
   ]);
-  const list = activeCat
+
+  let list = activeCat
     ? await productsByCategory(activeCat.slug)
     : await getProducts();
+
+  const query = (q ?? "").trim().toLowerCase();
+  if (query) {
+    list = list.filter((p) =>
+      [p.name, p.brand, p.shortDescription, p.description].some((f) =>
+        f?.toLowerCase().includes(query)
+      )
+    );
+  }
 
   return (
     <div className="mx-auto max-w-7xl px-5 py-16 sm:px-8">
       <div className="mb-10 text-center">
         <p className="text-xs font-semibold uppercase tracking-[0.35em] text-rosegold">
-          La boutique
+          {query ? "Recherche" : "La boutique"}
         </p>
         <h1 className="mt-3 font-serif text-4xl text-charcoal sm:text-5xl">
-          {activeCat ? activeCat.name : "Tous nos produits"}
+          {query
+            ? `« ${q} »`
+            : activeCat
+              ? activeCat.name
+              : "Tous nos produits"}
         </h1>
         <p className="mx-auto mt-3 max-w-lg text-charcoal-soft">
-          {activeCat
-            ? activeCat.tagline
-            : "Une sélection raffinée pour révéler votre éclat naturel."}
+          {query
+            ? `${list.length} produit${list.length > 1 ? "s" : ""} trouvé${list.length > 1 ? "s" : ""}`
+            : activeCat
+              ? activeCat.tagline
+              : "Une sélection raffinée pour révéler votre éclat naturel."}
         </p>
       </div>
 
@@ -60,11 +76,20 @@ export default async function ProduitsPage({
         ))}
       </div>
 
-      <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
-        {list.map((p) => (
-          <ProductCard key={p.slug} product={p} />
-        ))}
-      </div>
+      {list.length === 0 ? (
+        <p className="py-16 text-center text-charcoal-soft">
+          Aucun produit ne correspond{query ? ` à « ${q} »` : ""}.{" "}
+          <Link href="/produits" className="text-rosegold hover:underline">
+            Voir tout
+          </Link>
+        </p>
+      ) : (
+        <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
+          {list.map((p) => (
+            <ProductCard key={p.slug} product={p} />
+          ))}
+        </div>
+      )}
     </div>
   );
 }

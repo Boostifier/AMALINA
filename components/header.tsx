@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { useCart } from "@/components/cart-context";
 import type { Category } from "@/lib/products";
@@ -40,9 +41,10 @@ export default function Header({
 
   return (
     <header className="sticky top-0 z-50 border-b border-blush-deep/40 bg-ivory/85 backdrop-blur-md">
-      <div className="mx-auto flex h-20 max-w-7xl items-center justify-between px-5 sm:px-8">
+      {/* Top row: logo · search · icons */}
+      <div className="mx-auto flex h-20 max-w-7xl items-center gap-4 px-5 sm:px-8">
         {/* Logo wordmark (text only — no image) */}
-        <Link href="/" className="group flex flex-col leading-none">
+        <Link href="/" className="group flex shrink-0 flex-col leading-none">
           <span className="font-serif text-2xl tracking-[0.18em] text-charcoal">
             AMALINA
           </span>
@@ -51,20 +53,10 @@ export default function Header({
           </span>
         </Link>
 
-        {/* Desktop nav */}
-        <nav className="hidden items-center gap-9 md:flex">
-          {nav.map((item) => (
-            <Link
-              key={item.href}
-              href={item.href}
-              className="text-sm font-medium tracking-wide text-charcoal-soft transition-colors hover:text-rosegold"
-            >
-              {item.label}
-            </Link>
-          ))}
-        </nav>
+        {/* Search */}
+        <SearchBar className="mx-auto hidden w-full max-w-md md:block" />
 
-        <div className="flex items-center gap-3">
+        <div className="ml-auto flex items-center gap-3 md:ml-0">
           {isAdmin && (
             <Link
               href="/admin"
@@ -76,17 +68,19 @@ export default function Header({
           )}
           <Link
             href={userEmail ? "/compte" : "/connexion"}
-            className="hidden text-sm font-medium tracking-wide text-charcoal-soft transition-colors hover:text-rosegold sm:inline-flex"
+            aria-label={userEmail ? "Mon compte" : "Connexion"}
+            className="hidden h-10 w-10 items-center justify-center rounded-full border border-rosegold/40 text-rosegold transition-colors hover:bg-rosegold hover:text-white sm:inline-flex"
           >
-            {userEmail ? "Mon compte" : "Connexion"}
+            <UserIcon />
           </Link>
           <Link
             href="/panier"
-            className="relative inline-flex items-center gap-2 rounded-full border border-rosegold/40 px-4 py-2 text-sm font-medium text-rosegold transition-colors hover:bg-rosegold hover:text-white"
+            aria-label={count > 0 ? `Panier (${count})` : "Panier"}
+            className="relative inline-flex h-10 w-10 items-center justify-center rounded-full border border-rosegold/40 text-rosegold transition-colors hover:bg-rosegold hover:text-white"
           >
-            <span aria-hidden>Panier</span>
+            <CartIcon />
             {count > 0 && (
-              <span className="inline-flex h-5 min-w-5 items-center justify-center rounded-full bg-rosegold px-1.5 text-xs font-semibold text-white">
+              <span className="absolute -right-1 -top-1 inline-flex h-5 min-w-5 items-center justify-center rounded-full bg-charcoal px-1 text-[0.65rem] font-semibold text-ivory">
                 {count}
               </span>
             )}
@@ -118,6 +112,21 @@ export default function Header({
             </span>
           </button>
         </div>
+      </div>
+
+      {/* Primary nav bar (desktop) */}
+      <div className="hidden border-t border-blush-deep/30 md:block">
+        <nav className="mx-auto flex max-w-7xl items-center justify-center gap-x-16 px-5 py-3 sm:px-8">
+          {nav.map((item) => (
+            <Link
+              key={item.href}
+              href={item.href}
+              className="text-sm font-medium tracking-wide text-charcoal-soft transition-colors hover:text-rosegold"
+            >
+              {item.label}
+            </Link>
+          ))}
+        </nav>
       </div>
 
       {/* Category sub-nav (desktop) */}
@@ -160,6 +169,8 @@ export default function Header({
         }`}
       >
         <nav className="px-5 py-5">
+          <SearchBar className="mb-4" onSubmit={() => setOpen(false)} />
+
           <ul className="flex flex-col gap-1">
             {primaryLinks.map((item, i) => (
               <li
@@ -211,6 +222,102 @@ export default function Header({
         </nav>
       </div>
     </header>
+  );
+}
+
+function SearchBar({
+  className = "",
+  onSubmit,
+}: {
+  className?: string;
+  onSubmit?: () => void;
+}) {
+  const router = useRouter();
+  const [q, setQ] = useState("");
+
+  return (
+    <form
+      role="search"
+      onSubmit={(e) => {
+        e.preventDefault();
+        const query = q.trim();
+        router.push(query ? `/produits?q=${encodeURIComponent(query)}` : "/produits");
+        onSubmit?.();
+      }}
+      className={className}
+    >
+      <div className="relative">
+        <span className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 text-mauve">
+          <SearchIcon />
+        </span>
+        <input
+          type="search"
+          value={q}
+          onChange={(e) => setQ(e.target.value)}
+          placeholder="Rechercher un produit…"
+          aria-label="Rechercher un produit"
+          className="h-10 w-full rounded-full border border-blush-deep/60 bg-white/70 pl-10 pr-4 text-sm text-charcoal placeholder:text-mauve/70 focus:border-rosegold focus:outline-none"
+        />
+      </div>
+    </form>
+  );
+}
+
+function SearchIcon() {
+  return (
+    <svg
+      width="17"
+      height="17"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.8"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden
+    >
+      <circle cx="11" cy="11" r="7" />
+      <path d="m21 21-4.3-4.3" />
+    </svg>
+  );
+}
+
+function UserIcon() {
+  return (
+    <svg
+      width="19"
+      height="19"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.8"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden
+    >
+      <circle cx="12" cy="8" r="4" />
+      <path d="M4 21a8 8 0 0 1 16 0" />
+    </svg>
+  );
+}
+
+function CartIcon() {
+  return (
+    <svg
+      width="19"
+      height="19"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.8"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden
+    >
+      <circle cx="9" cy="20" r="1.4" />
+      <circle cx="18" cy="20" r="1.4" />
+      <path d="M2 3h2.2l2 12.2a1.6 1.6 0 0 0 1.6 1.3h9.1a1.6 1.6 0 0 0 1.6-1.2L21 7H6" />
+    </svg>
   );
 }
 

@@ -3,6 +3,7 @@ import { createClient } from "@/lib/supabase/server";
 import { formatPrice } from "@/lib/products";
 import { deleteProduct } from "@/app/actions/admin";
 import ConfirmSubmit from "@/components/admin/confirm-submit";
+import ProductImage from "@/components/product-image";
 import type { ProductRow } from "@/lib/supabase/types";
 
 export default async function AdminProductsPage() {
@@ -29,6 +30,9 @@ export default async function AdminProductsPage() {
         <table className="w-full text-sm">
           <thead className="text-left text-mauve">
             <tr className="border-b border-blush-deep/30">
+              <th className="px-4 py-3 font-medium">
+                <span className="sr-only">Image</span>
+              </th>
               <th className="px-4 py-3 font-medium">Nom</th>
               <th className="px-4 py-3 font-medium">Marque</th>
               <th className="px-4 py-3 font-medium">Catégorie</th>
@@ -41,6 +45,15 @@ export default async function AdminProductsPage() {
           <tbody>
             {products.map((p) => (
               <tr key={p.id} className="border-b border-blush-deep/20 last:border-0">
+                <td className="py-2 pl-4 pr-0">
+                  <Link href={`/admin/produits/${p.slug}`} className="block">
+                    <ProductImage
+                      product={p}
+                      sizes="48px"
+                      className="h-12 w-12 rounded-lg border border-blush-deep/30"
+                    />
+                  </Link>
+                </td>
                 <td className="px-4 py-3">
                   <Link href={`/admin/produits/${p.slug}`} className="text-rosegold hover:underline">
                     {p.name}
