@@ -23,7 +23,7 @@ export default async function Home() {
           <div className="animate-fade-up max-w-xl">
             <span className="inline-flex items-center gap-2 rounded-full border border-rosegold/30 bg-white/60 px-4 py-1.5 text-xs font-semibold uppercase tracking-[0.25em] text-rosegold backdrop-blur">
               <span className="h-1.5 w-1.5 rounded-full bg-rosegold" />
-              Cosmétiques authentiques
+              Soins authentiques
             </span>
             <h1 className="mt-6 font-serif text-5xl leading-[1.05] text-charcoal sm:text-6xl lg:text-7xl">
               Une <span className="italic text-rosegold">beauté</span> saine, pas
