@@ -48,25 +48,6 @@ export default async function Home() {
                 Notre histoire
               </Link>
             </div>
-
-            {/* Trust signals */}
-            <dl className="mt-12 flex flex-wrap gap-x-10 gap-y-6 border-t border-blush-deep/40 pt-8">
-              {[
-                { value: "4", suffix: " univers", label: "de soins capillaires" },
-                { value: "100%", suffix: "", label: "marques sélectionnées" },
-                { value: "COD", suffix: "", label: "paiement à la livraison" },
-              ].map((stat) => (
-                <div key={stat.label}>
-                  <dd className="font-serif text-3xl text-charcoal">
-                    {stat.value}
-                    <span className="text-xl text-rosegold">{stat.suffix}</span>
-                  </dd>
-                  <dt className="mt-1 text-xs uppercase tracking-wider text-mauve">
-                    {stat.label}
-                  </dt>
-                </div>
-              ))}
-            </dl>
           </div>
 
           {/* Decorative medallion */}
