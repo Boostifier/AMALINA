@@ -152,6 +152,21 @@ export async function updateOrderStatus(fd: FormData) {
   revalidatePath(`/admin/commandes/${id}`);
 }
 
+export async function deleteOrder(fd: FormData) {
+  await requireAdmin();
+  const id = str(fd, "id");
+  if (!id) return;
+
+  // `orders` has no RLS delete policy, so use the service-role client (the
+  // action itself is admin-gated above). order_items are removed via
+  // `on delete cascade`.
+  const admin = createAdminClient();
+  await admin.from("orders").delete().eq("id", id);
+
+  revalidatePath("/admin/commandes");
+  redirect("/admin/commandes");
+}
+
 // ---------------------------------------------------------------------------
 // Categories
 // ---------------------------------------------------------------------------

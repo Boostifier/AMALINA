@@ -106,10 +106,11 @@ export default async function Home() {
         <div className="mb-12 flex flex-col items-center text-center">
           <Eyebrow>Nos univers</Eyebrow>
           <h2 className="mt-4 font-serif text-4xl text-charcoal sm:text-5xl">
-            Explorez nos catégories
+            Découvrez nos catégories
           </h2>
           <p className="mt-3 max-w-md text-charcoal-soft">
-            Quatre familles de soins pensées pour révéler chaque type de cheveux.
+            Une sélection complète de soins pour la peau, les cheveux et la
+            protection solaire.
           </p>
         </div>
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">

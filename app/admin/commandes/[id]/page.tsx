@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
-import { updateOrderStatus } from "@/app/actions/admin";
+import { updateOrderStatus, deleteOrder } from "@/app/actions/admin";
 import { formatPrice } from "@/lib/products";
 import {
   ORDER_STATUSES,
@@ -80,8 +80,26 @@ export default async function AdminOrderDetailPage({
         <h2 className="mb-4 font-serif text-xl text-charcoal">Client</h2>
         <dl className="grid gap-2 text-sm sm:grid-cols-2">
           <Info label="Nom" value={order.full_name} />
-          <Info label="E-mail" value={order.email} />
-          <Info label="Téléphone" value={order.phone} />
+          <Info label="E-mail">
+            <a href={`mailto:${order.email}`} className="text-rosegold hover:underline">
+              {order.email}
+            </a>
+          </Info>
+          <Info label="Téléphone">
+            <span className="flex flex-wrap items-center gap-2">
+              <a href={`tel:${order.phone}`} className="text-rosegold hover:underline">
+                {order.phone}
+              </a>
+              <a
+                href={waLink(order.phone)}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="rounded-full bg-emerald-100 px-2 py-0.5 text-xs font-semibold text-emerald-800 hover:bg-emerald-200"
+              >
+                WhatsApp
+              </a>
+            </span>
+          </Info>
           <Info label="Ville" value={order.city} />
           <Info label="Adresse" value={`${order.address}${order.postal_code ? `, ${order.postal_code}` : ""}`} />
           <Info label="Paiement" value="À la livraison" />
@@ -113,17 +131,51 @@ export default async function AdminOrderDetailPage({
           <Row label="Total" value={formatPrice(Number(order.total))} strong />
         </dl>
       </section>
+
+      {/* Danger zone */}
+      <section className="flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-rose-200 bg-rose-50/60 p-5">
+        <div>
+          <h2 className="font-medium text-rose-900">Supprimer la commande</h2>
+          <p className="text-sm text-rose-800/80">
+            Cette action est définitive et supprime aussi les articles associés.
+          </p>
+        </div>
+        <form action={deleteOrder}>
+          <input type="hidden" name="id" value={order.id} />
+          <button
+            type="submit"
+            className="inline-flex h-11 items-center justify-center rounded-full bg-rose-600 px-6 text-sm font-semibold uppercase tracking-widest text-white transition-colors hover:bg-rose-700"
+          >
+            Supprimer
+          </button>
+        </form>
+      </section>
     </div>
   );
 }
 
-function Info({ label, value }: { label: string; value: string }) {
+function Info({
+  label,
+  value,
+  children,
+}: {
+  label: string;
+  value?: string;
+  children?: React.ReactNode;
+}) {
   return (
     <div>
       <dt className="text-mauve">{label}</dt>
-      <dd className="text-charcoal">{value}</dd>
+      <dd className="text-charcoal">{children ?? value}</dd>
     </div>
   );
+}
+
+/** Build a wa.me link, assuming Tunisian (+216) numbers when given 8 digits. */
+function waLink(phone: string): string {
+  const digits = phone.replace(/\D/g, "");
+  const intl = digits.length === 8 ? `216${digits}` : digits;
+  return `https://wa.me/${intl}`;
 }
 
 function Row({ label, value, strong }: { label: string; value: string; strong?: boolean }) {
