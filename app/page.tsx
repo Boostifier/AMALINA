@@ -199,7 +199,7 @@ export default async function Home() {
               {
                 icon: <LeafIcon />,
                 title: "Beauté responsable",
-                text: "Des formules respectueuses de votre peau et de votre bien-être.",
+                text: "Des formules respectueuses pour votre beauté et votre bien-être.",
               },
               {
                 icon: <TruckIcon />,

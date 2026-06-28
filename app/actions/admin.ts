@@ -1,5 +1,6 @@
 "use server";
 
+import { randomUUID } from "crypto";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
@@ -150,6 +151,108 @@ export async function updateOrderStatus(fd: FormData) {
   await supabase.from("orders").update({ status }).eq("id", id);
   revalidatePath("/admin/commandes");
   revalidatePath(`/admin/commandes/${id}`);
+}
+
+export type AdminOrderInput = {
+  full_name: string;
+  phone: string;
+  email?: string;
+  address?: string;
+  city: string;
+  postal_code?: string;
+  notes?: string;
+  status?: OrderStatus;
+  items: { slug: string; qty: number }[];
+};
+
+/**
+ * Admin-created order (e.g. a phone/COD order taken manually). Prices and
+ * names come from the database, never the client — mirrors the storefront
+ * checkout. Like the storefront, it does not touch stock.
+ */
+export async function createOrder(
+  input: AdminOrderInput
+): Promise<{ ok: false; error: string }> {
+  await requireAdmin();
+
+  const full_name = input.full_name?.trim() ?? "";
+  const phone = input.phone?.trim() ?? "";
+  const city = input.city?.trim() ?? "";
+  if (!full_name || !phone || !city) {
+    return { ok: false, error: "Le nom, le téléphone et la ville sont obligatoires." };
+  }
+
+  // Normalize + dedupe requested items.
+  const wanted = new Map<string, number>();
+  for (const it of input.items ?? []) {
+    const qty = Math.floor(Number(it.qty));
+    if (it.slug && qty > 0) wanted.set(it.slug, (wanted.get(it.slug) ?? 0) + qty);
+  }
+  if (wanted.size === 0) {
+    return { ok: false, error: "Ajoutez au moins un produit." };
+  }
+
+  const supabase = await createClient();
+  const { data: products } = await supabase
+    .from("products")
+    .select("slug, name, price, active")
+    .in("slug", [...wanted.keys()]);
+
+  const lines = (products ?? [])
+    .filter((p) => p.active)
+    .map((p) => {
+      const qty = wanted.get(p.slug)!;
+      const unit = Number(p.price);
+      return {
+        product_slug: p.slug,
+        product_name: p.name,
+        unit_price: unit,
+        qty,
+        line_total: Number((unit * qty).toFixed(2)),
+      };
+    });
+  if (lines.length === 0) {
+    return { ok: false, error: "Les produits sélectionnés sont introuvables." };
+  }
+
+  const subtotal = Number(lines.reduce((s, l) => s + l.line_total, 0).toFixed(2));
+  const shipping = subtotal >= 400 ? 0 : 3;
+  const total = Number((subtotal + shipping).toFixed(2));
+  const status =
+    input.status && ORDER_STATUSES.includes(input.status) ? input.status : "pending";
+
+  const orderId = randomUUID();
+  const { error: orderError } = await supabase.from("orders").insert({
+    id: orderId,
+    user_id: null,
+    status,
+    full_name,
+    email: (input.email ?? "").trim(),
+    phone,
+    address: (input.address ?? "").trim(),
+    city,
+    postal_code: (input.postal_code ?? "").trim(),
+    notes: (input.notes ?? "").trim(),
+    payment_method: "cod",
+    subtotal,
+    shipping,
+    total,
+  });
+  if (orderError) {
+    return { ok: false, error: "Impossible d'enregistrer la commande." };
+  }
+
+  const { error: itemsError } = await supabase
+    .from("order_items")
+    .insert(lines.map((l) => ({ order_id: orderId, ...l })));
+  if (itemsError) {
+    // Roll back the orphaned order (needs service role: no RLS delete policy).
+    await createAdminClient().from("orders").delete().eq("id", orderId);
+    return { ok: false, error: "Impossible d'enregistrer les articles." };
+  }
+
+  revalidatePath("/admin/commandes");
+  redirect(`/admin/commandes/${orderId}`);
 }
 
 export async function deleteOrder(fd: FormData) {

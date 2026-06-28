@@ -15,8 +15,9 @@ export default function Footer({ categories }: { categories: Category[] }) {
             </span>
           </div>
           <p className="mt-4 max-w-xs text-sm leading-relaxed text-charcoal-soft">
-            Une sélection raffinée de soins capillaires, pensée pour révéler la
-            beauté naturelle de vos cheveux.
+            Une sélection raffinée de soins du visage, soins capillaires, écrans
+            solaires, shampooings, huiles et masques pour prendre soin de vous au
+            quotidien.
           </p>
         </div>
 

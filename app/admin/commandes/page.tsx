@@ -1,13 +1,8 @@
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
-import { formatPrice } from "@/lib/products";
-import {
-  ORDER_STATUSES,
-  STATUS_LABELS,
-  formatDate,
-} from "@/lib/orders";
-import type { OrderRow, OrderStatus } from "@/lib/supabase/types";
-import OrderStatusSelect from "@/components/admin/order-status-select";
+import { ORDER_STATUSES, STATUS_LABELS } from "@/lib/orders";
+import type { OrderRow as OrderRowType, OrderStatus } from "@/lib/supabase/types";
+import OrderRow from "@/components/admin/order-row";
 
 function isStatus(v: string | undefined): v is OrderStatus {
   return !!v && (ORDER_STATUSES as string[]).includes(v);
@@ -37,7 +32,7 @@ export default async function AdminOrdersPage({
   }
 
   const { data } = await query;
-  const orders = (data ?? []) as OrderRow[];
+  const orders = (data ?? []) as OrderRowType[];
 
   // Preserve the active search term when switching status chips.
   const chipHref = (s?: OrderStatus) => {
@@ -50,7 +45,15 @@ export default async function AdminOrdersPage({
 
   return (
     <div className="space-y-6">
-      <h1 className="font-serif text-3xl text-charcoal">Commandes</h1>
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <h1 className="font-serif text-3xl text-charcoal">Commandes</h1>
+        <Link
+          href="/admin/commandes/nouveau"
+          className="inline-flex h-11 items-center justify-center rounded-full bg-rosegold px-6 text-sm font-semibold uppercase tracking-widest text-white transition-colors hover:bg-rosegold-dark"
+        >
+          Nouvelle commande
+        </Link>
+      </div>
 
       {/* Search */}
       <form method="get" className="flex flex-wrap gap-3">
@@ -110,27 +113,7 @@ export default async function AdminOrdersPage({
             </thead>
             <tbody>
               {orders.map((order) => (
-                <tr key={order.id} className="border-b border-blush-deep/20 last:border-0">
-                  <td className="px-4 py-3">
-                    <Link href={`/admin/commandes/${order.id}`} className="text-rosegold hover:underline">
-                      {order.order_number}
-                    </Link>
-                  </td>
-                  <td className="px-4 py-3 text-charcoal">{order.full_name}</td>
-                  <td className="px-4 py-3 text-charcoal-soft">
-                    <a href={`tel:${order.phone}`} className="hover:text-rosegold hover:underline">
-                      {order.phone}
-                    </a>
-                  </td>
-                  <td className="px-4 py-3 text-charcoal-soft">{order.city}</td>
-                  <td className="px-4 py-3 text-charcoal-soft">{formatDate(order.created_at)}</td>
-                  <td className="px-4 py-3">
-                    <OrderStatusSelect id={order.id} status={order.status} />
-                  </td>
-                  <td className="px-4 py-3 text-right font-medium text-charcoal">
-                    {formatPrice(Number(order.total))}
-                  </td>
-                </tr>
+                <OrderRow key={order.id} order={order} />
               ))}
             </tbody>
           </table>
