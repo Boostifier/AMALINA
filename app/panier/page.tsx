@@ -6,7 +6,7 @@ import { formatPrice } from "@/lib/products";
 
 export default function PanierPage() {
   const { items, total, setQty, remove, clear } = useCart();
-  const shipping = total >= 400 || total === 0 ? 0 : 30;
+  const shipping = total >= 400 || total === 0 ? 0 : 3;
 
   if (items.length === 0) {
     return (

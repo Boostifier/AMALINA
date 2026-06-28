@@ -7,7 +7,7 @@ import { formatPrice } from "@/lib/products";
 import { placeOrder, type CheckoutCustomer } from "@/app/actions/orders";
 
 const FREE_SHIPPING_THRESHOLD = 400;
-const SHIPPING_FEE = 30;
+const SHIPPING_FEE = 3;
 
 export default function CheckoutClient({
   initialName,

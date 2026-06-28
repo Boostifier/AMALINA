@@ -26,13 +26,13 @@ export default async function Home() {
               Soins capillaires
             </span>
             <h1 className="mt-6 font-serif text-5xl leading-[1.05] text-charcoal sm:text-6xl lg:text-7xl">
-              Révélez la{" "}
-              <span className="italic text-rosegold">beauté</span> de vos cheveux
+              Une <span className="italic text-rosegold">beauté</span> saine, pas
+              parfaite.
             </h1>
             <p className="mt-6 max-w-xl text-lg leading-relaxed text-charcoal-soft">
-              Une sélection raffinée de masques nourrissants, huiles précieuses,
-              shampoings et accessoires. Des cheveux sublimés, avec élégance et
-              délicatesse.
+              Découvrez notre sélection de soins du visage, soins capillaires,
+              écrans solaires, shampoings, huiles et masques pour prendre soin de
+              vous au quotidien.
             </p>
             <div className="mt-9 flex flex-wrap gap-4">
               <Link
@@ -42,10 +42,10 @@ export default async function Home() {
                 Découvrir la boutique
               </Link>
               <Link
-                href="/produits?categorie=masques"
+                href="/a-propos"
                 className="inline-flex h-12 items-center justify-center rounded-full border border-rosegold/40 px-8 text-sm font-semibold uppercase tracking-widest text-rosegold transition-colors hover:bg-rosegold hover:text-white"
               >
-                Nos masques
+                Notre histoire
               </Link>
             </div>
 

@@ -24,6 +24,7 @@ export default function Header({
 }) {
   const { count } = useCart();
   const [open, setOpen] = useState(false);
+  const [scrolled, setScrolled] = useState(false);
 
   // Lock body scroll while the mobile menu is open.
   useEffect(() => {
@@ -32,6 +33,16 @@ export default function Header({
       document.body.style.overflow = "";
     };
   }, [open]);
+
+  // Shrink the secondary bars slightly once the page is scrolled.
+  useEffect(() => {
+    const onScroll = () => setScrolled(window.scrollY > 8);
+    onScroll();
+    window.addEventListener("scroll", onScroll, { passive: true });
+    return () => window.removeEventListener("scroll", onScroll);
+  }, []);
+
+  const barPad = scrolled ? "py-2" : "py-3";
 
   const primaryLinks = [
     ...nav,
@@ -116,7 +127,9 @@ export default function Header({
 
       {/* Primary nav bar (desktop) */}
       <div className="hidden border-t border-blush-deep/30 md:block">
-        <nav className="mx-auto flex max-w-7xl items-center justify-center gap-x-16 px-5 py-3 sm:px-8">
+        <nav
+          className={`mx-auto flex max-w-7xl items-center justify-center gap-x-16 px-5 transition-[padding] duration-300 sm:px-8 ${barPad}`}
+        >
           {nav.map((item) => (
             <Link
               key={item.href}
@@ -131,10 +144,12 @@ export default function Header({
 
       {/* Category sub-nav (desktop) */}
       <div className="hidden border-t border-blush-deep/30 bg-cream/70 md:block">
-        <nav className="mx-auto flex max-w-7xl items-center justify-center gap-7 overflow-x-auto px-5 sm:px-8">
+        <nav
+          className={`mx-auto flex max-w-7xl items-center justify-center gap-7 overflow-x-auto px-5 transition-[padding] duration-300 sm:px-8 ${barPad}`}
+        >
           <Link
             href="/produits"
-            className="shrink-0 py-3 text-xs font-semibold uppercase tracking-[0.18em] text-rosegold transition-colors hover:text-rosegold-dark"
+            className="shrink-0 text-xs font-semibold uppercase tracking-[0.18em] text-rosegold transition-colors hover:text-rosegold-dark"
           >
             Tous les produits
           </Link>
@@ -143,7 +158,7 @@ export default function Header({
             <Link
               key={c.slug}
               href={`/produits?categorie=${c.slug}`}
-              className="shrink-0 py-3 text-xs font-medium uppercase tracking-[0.14em] text-charcoal-soft transition-colors hover:text-rosegold"
+              className="shrink-0 text-xs font-medium uppercase tracking-[0.14em] text-charcoal-soft transition-colors hover:text-rosegold"
             >
               {c.name}
             </Link>

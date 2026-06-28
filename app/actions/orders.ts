@@ -22,7 +22,7 @@ export type PlaceOrderResult =
   | { ok: false; error: string };
 
 const FREE_SHIPPING_THRESHOLD = 400;
-const SHIPPING_FEE = 30;
+const SHIPPING_FEE = 3;
 
 export async function placeOrder(
   customer: CheckoutCustomer,
