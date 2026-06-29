@@ -42,9 +42,17 @@ export default async function AdminOrderDetailPage({
           </h1>
           <p className="mt-1 text-sm text-mauve">{formatDate(order.created_at)}</p>
         </div>
-        <span className={`rounded-full px-3 py-1 text-xs font-semibold ${STATUS_CLASSES[order.status]}`}>
-          {STATUS_LABELS[order.status]}
-        </span>
+        <div className="flex items-center gap-3">
+          <span className={`rounded-full px-3 py-1 text-xs font-semibold ${STATUS_CLASSES[order.status]}`}>
+            {STATUS_LABELS[order.status]}
+          </span>
+          <Link
+            href={`/admin/commandes/${order.id}/facture`}
+            className="inline-flex h-10 items-center justify-center rounded-full border border-rosegold/40 px-5 text-sm font-semibold text-rosegold transition-colors hover:bg-rosegold hover:text-white"
+          >
+            Imprimer la facture
+          </Link>
+        </div>
       </div>
 
       {/* Status update */}
