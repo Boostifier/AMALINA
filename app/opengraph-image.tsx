@@ -1,12 +1,18 @@
 import { ImageResponse } from "next/og";
+import { readFile } from "node:fs/promises";
+import { join } from "node:path";
 
 // Preview image shown when the site link is shared (WhatsApp, Facebook, X, etc.).
 // Gradient + wordmark only (no photo) so the file stays tiny and unfurls everywhere.
-export const alt = "Amalina Market — Soins Capillaires";
+export const alt = "Amalina Market — Soins naturels";
 export const size = { width: 1200, height: 630 };
 export const contentType = "image/png";
 
-export default function Image() {
+export default async function Image() {
+  const playfair = await readFile(
+    join(process.cwd(), "assets/PlayfairDisplay-Bold.ttf"),
+  );
+
   return new ImageResponse(
     (
       <div
@@ -79,23 +85,22 @@ export default function Image() {
             Soins authentiques
           </div>
 
-          {/* Wordmark */}
+          {/* Wordmark — Playfair Display for a classy serif */}
           <div
             style={{
-              marginTop: 26,
-              fontSize: 132,
-              fontWeight: 700,
-              letterSpacing: 10,
+              marginTop: 22,
+              fontSize: 150,
               lineHeight: 1,
-              fontFamily: "Georgia, 'Times New Roman', serif",
+              letterSpacing: 4,
+              fontFamily: "Playfair Display",
               color: "#7d3f48",
             }}
           >
-            AMALINA
+            Amalina
           </div>
           <div
             style={{
-              marginTop: 10,
+              marginTop: 14,
               fontSize: 40,
               letterSpacing: 18,
               textTransform: "uppercase",
@@ -105,21 +110,31 @@ export default function Image() {
             Market
           </div>
 
-          {/* Tagline */}
+          {/* Tagline — covers the full range, not only hair care */}
           <div
             style={{
               marginTop: 36,
               fontSize: 34,
-              maxWidth: 720,
+              maxWidth: 760,
               lineHeight: 1.35,
               color: "#5a4a45",
             }}
           >
-            Soins capillaires raffinés — masques, huiles & accessoires
+            Soins du visage, des cheveux & solaires — naturels et raffinés
           </div>
         </div>
       </div>
     ),
-    { ...size },
+    {
+      ...size,
+      fonts: [
+        {
+          name: "Playfair Display",
+          data: playfair,
+          style: "normal",
+          weight: 700,
+        },
+      ],
+    },
   );
 }

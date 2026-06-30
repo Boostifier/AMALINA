@@ -27,9 +27,9 @@ const siteUrl = process.env.NEXT_PUBLIC_SITE_URL
     ? new URL(`https://${process.env.VERCEL_PROJECT_PRODUCTION_URL}`)
     : new URL("http://localhost:3000");
 
-const title = "Amalina Market — Soins Capillaires";
+const title = "Amalina Market — Soins naturels";
 const description =
-  "Amalina Market — une sélection raffinée de soins capillaires : masques nourrissants, huiles, shampoings et accessoires. Élégance et beauté naturelle.";
+  "Amalina Market — une sélection raffinée de soins : visage, cheveux, écrans solaires, shampoings, huiles et masques. Élégance et beauté naturelle.";
 
 export const metadata: Metadata = {
   metadataBase: siteUrl,
