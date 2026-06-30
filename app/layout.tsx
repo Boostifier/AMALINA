@@ -20,10 +20,34 @@ const playfair = Playfair_Display({
   style: ["normal", "italic"],
 });
 
+// Base URL used to turn the generated share image into an absolute URL.
+const siteUrl = process.env.NEXT_PUBLIC_SITE_URL
+  ? new URL(process.env.NEXT_PUBLIC_SITE_URL)
+  : process.env.VERCEL_PROJECT_PRODUCTION_URL
+    ? new URL(`https://${process.env.VERCEL_PROJECT_PRODUCTION_URL}`)
+    : new URL("http://localhost:3000");
+
+const title = "Amalina Market — Soins Capillaires";
+const description =
+  "Amalina Market — une sélection raffinée de soins capillaires : masques nourrissants, huiles, shampoings et accessoires. Élégance et beauté naturelle.";
+
 export const metadata: Metadata = {
-  title: "Amalina Market — Soins Capillaires",
-  description:
-    "Amalina Market — une sélection raffinée de soins capillaires : masques nourrissants, huiles, shampoings et accessoires. Élégance et beauté naturelle.",
+  metadataBase: siteUrl,
+  title,
+  description,
+  openGraph: {
+    title,
+    description,
+    siteName: "Amalina Market",
+    locale: "fr_FR",
+    type: "website",
+    url: "/",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title,
+    description,
+  },
 };
 
 export default async function RootLayout({
