@@ -26,19 +26,23 @@ export default function ProductCard({ product }: { product: Product }) {
   return (
     <Link
       href={`/produits/${product.slug}`}
-      className="group flex flex-col overflow-hidden rounded-2xl border border-blush-deep/50 bg-white/80 shadow-[0_10px_30px_-22px_rgba(43,36,34,0.5)] transition-all duration-300 hover:-translate-y-1.5 hover:border-rosegold/50 hover:shadow-[0_26px_50px_-24px_rgba(156,88,98,0.55)]"
+      className="group flex flex-col overflow-hidden rounded-3xl border border-blush-deep/40 bg-white shadow-[0_12px_34px_-24px_rgba(43,36,34,0.55)] transition-all duration-300 hover:-translate-y-1.5 hover:border-rosegold/50 hover:shadow-[0_30px_55px_-28px_rgba(156,88,98,0.6)]"
     >
-      <div className="relative overflow-hidden">
+      <div className="relative overflow-hidden bg-cream">
         <ProductImage
           product={product}
-          className="aspect-square w-full transition-transform duration-500 group-hover:scale-[1.05]"
+          className={`aspect-square w-full transition-transform duration-[600ms] ease-out group-hover:scale-[1.06] ${
+            outOfStock ? "opacity-70 grayscale-[0.35]" : ""
+          }`}
         />
+        {/* Subtle scrim that deepens on hover for a little more depth */}
+        <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-charcoal/10 to-transparent opacity-0 transition-opacity duration-300 group-hover:opacity-100" />
 
         {/* Badges */}
         <div className="absolute left-3 top-3 flex flex-col gap-2">
           {onSale && (
             <span className="rounded-full bg-rosegold px-3 py-1 text-[0.62rem] font-semibold uppercase tracking-widest text-white shadow-sm">
-              Promo −{discountPercent(product)}%
+              −{discountPercent(product)}%
             </span>
           )}
           {product.bestseller && (
@@ -59,7 +63,7 @@ export default function ProductCard({ product }: { product: Product }) {
             type="button"
             onClick={handleAdd}
             aria-label={`Ajouter ${product.name} au panier`}
-            className={`absolute bottom-3 right-3 flex h-11 w-11 items-center justify-center rounded-full text-white shadow-lg transition-all duration-300 sm:translate-y-2 sm:opacity-0 sm:group-hover:translate-y-0 sm:group-hover:opacity-100 ${
+            className={`absolute bottom-3 right-3 flex h-11 w-11 items-center justify-center rounded-full text-white shadow-lg ring-1 ring-white/30 transition-all duration-300 sm:translate-y-2 sm:opacity-0 sm:group-hover:translate-y-0 sm:group-hover:opacity-100 ${
               added ? "bg-emerald-600" : "bg-rosegold hover:bg-rosegold-dark"
             }`}
           >
@@ -74,16 +78,16 @@ export default function ProductCard({ product }: { product: Product }) {
             {product.brand}
           </p>
         )}
-        <h3 className="mt-1 font-serif text-lg leading-snug text-charcoal">
+        <h3 className="mt-1 line-clamp-2 font-serif text-lg leading-snug text-charcoal transition-colors group-hover:text-rosegold-dark">
           {product.name}
         </h3>
         <p className="mt-1.5 line-clamp-2 flex-1 text-sm text-charcoal-soft">
           {product.shortDescription}
         </p>
-        <div className="mt-4 flex items-center justify-between border-t border-blush-deep/30 pt-4">
+        <div className="mt-4 flex items-center justify-between border-t border-blush-deep/25 pt-4">
           {onSale ? (
             <span className="flex items-baseline gap-2">
-              <span className="font-serif text-lg text-rosegold-dark">
+              <span className="font-serif text-xl text-rosegold-dark">
                 {formatPrice(effectivePrice(product))}
               </span>
               <span className="text-sm text-mauve line-through">
@@ -91,12 +95,11 @@ export default function ProductCard({ product }: { product: Product }) {
               </span>
             </span>
           ) : (
-            <span className="font-serif text-lg text-rosegold-dark">
+            <span className="font-serif text-xl text-rosegold-dark">
               {formatPrice(product.price)}
             </span>
           )}
-          <span className="inline-flex items-center gap-1 text-sm font-medium text-rosegold transition-all group-hover:gap-2">
-            Voir
+          <span className="flex h-9 w-9 items-center justify-center rounded-full border border-rosegold/40 text-rosegold transition-colors group-hover:bg-rosegold group-hover:text-white">
             <ArrowIcon />
           </span>
         </div>

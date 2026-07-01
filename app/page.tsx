@@ -1,13 +1,20 @@
 import Link from "next/link";
 import Image from "next/image";
-import { getCategories, getBestsellers } from "@/lib/catalog";
+import { getCategories, getBestsellers, getSaleProducts } from "@/lib/catalog";
+import { discountPercent } from "@/lib/products";
 import ProductCard from "@/components/product-card";
 
 export default async function Home() {
-  const [categories, featured] = await Promise.all([
+  const [categories, featured, saleProducts] = await Promise.all([
     getCategories(),
     getBestsellers(),
+    getSaleProducts(),
   ]);
+  const promos = saleProducts.slice(0, 4);
+  const maxDiscount = saleProducts.reduce(
+    (max, p) => Math.max(max, discountPercent(p)),
+    0,
+  );
 
   return (
     <>
@@ -174,6 +181,41 @@ export default async function Home() {
           ))}
         </div>
       </section>
+
+      {/* Promotions — only shown when something is on sale */}
+      {promos.length > 0 && (
+        <section className="bg-blush/40">
+          <div className="mx-auto max-w-7xl px-5 py-16 sm:px-8">
+            <div className="mb-12 flex flex-wrap items-end justify-between gap-4">
+              <div>
+                <Eyebrow>Offres du moment</Eyebrow>
+                <h2 className="mt-4 font-serif text-4xl text-charcoal sm:text-5xl">
+                  En promotion
+                </h2>
+                {maxDiscount > 0 && (
+                  <p className="mt-3 text-charcoal-soft">
+                    Jusqu&apos;à <span className="font-semibold text-rosegold-dark">−{maxDiscount}%</span> sur une sélection de soins.
+                  </p>
+                )}
+              </div>
+              <Link
+                href="/promotions"
+                className="group inline-flex items-center gap-2 text-sm font-medium text-rosegold transition-colors hover:text-rosegold-dark"
+              >
+                Toutes les promos
+                <span className="transition-transform group-hover:translate-x-1">
+                  <ArrowIcon />
+                </span>
+              </Link>
+            </div>
+            <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
+              {promos.map((p) => (
+                <ProductCard key={p.slug} product={p} />
+              ))}
+            </div>
+          </div>
+        </section>
+      )}
 
       {/* Brand promise */}
       <section className="relative overflow-hidden bg-charcoal">

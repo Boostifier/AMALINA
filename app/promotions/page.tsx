@@ -3,6 +3,7 @@ import type { Metadata } from "next";
 import { getSaleProducts } from "@/lib/catalog";
 import { discountPercent } from "@/lib/products";
 import ProductCard from "@/components/product-card";
+import Pagination, { PAGE_SIZE } from "@/components/pagination";
 
 export const metadata: Metadata = {
   title: "Promotions — Amalina Market",
@@ -10,12 +11,22 @@ export const metadata: Metadata = {
     "Profitez de nos offres du moment : soins en promotion à prix réduit, dans la limite des stocks disponibles.",
 };
 
-export default async function PromotionsPage() {
+export default async function PromotionsPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ page?: string }>;
+}) {
+  const { page: pageParam } = await searchParams;
   const products = await getSaleProducts();
   const maxDiscount = products.reduce(
     (max, p) => Math.max(max, discountPercent(p)),
     0,
   );
+
+  const totalPages = Math.max(1, Math.ceil(products.length / PAGE_SIZE));
+  const page = Math.min(Math.max(1, Math.floor(Number(pageParam) || 1)), totalPages);
+  const pageItems = products.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
+  const makeHref = (p: number) => (p > 1 ? `/promotions?page=${p}` : "/promotions");
 
   return (
     <>
@@ -71,11 +82,14 @@ export default async function PromotionsPage() {
             </Link>
           </div>
         ) : (
-          <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
-            {products.map((p) => (
-              <ProductCard key={p.slug} product={p} />
-            ))}
-          </div>
+          <>
+            <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
+              {pageItems.map((p) => (
+                <ProductCard key={p.slug} product={p} />
+              ))}
+            </div>
+            <Pagination page={page} totalPages={totalPages} makeHref={makeHref} />
+          </>
         )}
       </section>
     </>

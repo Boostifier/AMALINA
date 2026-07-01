@@ -1,5 +1,4 @@
 import Link from "next/link";
-import Image from "next/image";
 import type { Metadata } from "next";
 import {
   getCategories,
@@ -9,6 +8,7 @@ import {
 } from "@/lib/catalog";
 import type { Category } from "@/lib/products";
 import ProductCard from "@/components/product-card";
+import Pagination, { PAGE_SIZE } from "@/components/pagination";
 
 export const metadata: Metadata = {
   title: "Boutique — Amalina Market",
@@ -19,9 +19,9 @@ export const metadata: Metadata = {
 export default async function ProduitsPage({
   searchParams,
 }: {
-  searchParams: Promise<{ categorie?: string; q?: string }>;
+  searchParams: Promise<{ categorie?: string; q?: string; page?: string }>;
 }) {
-  const { categorie, q } = await searchParams;
+  const { categorie, q, page: pageParam } = await searchParams;
   const [categories, activeCat] = await Promise.all([
     getCategories(),
     categorie ? getCategory(categorie) : Promise.resolve(undefined),
@@ -42,6 +42,19 @@ export default async function ProduitsPage({
 
   const count = list.length;
   const countLabel = `${count} produit${count > 1 ? "s" : ""}`;
+
+  const totalPages = Math.max(1, Math.ceil(count / PAGE_SIZE));
+  const page = Math.min(Math.max(1, Math.floor(Number(pageParam) || 1)), totalPages);
+  const pageItems = list.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
+
+  const makeHref = (p: number) => {
+    const sp = new URLSearchParams();
+    if (categorie) sp.set("categorie", categorie);
+    if (q) sp.set("q", q);
+    if (p > 1) sp.set("page", String(p));
+    const qs = sp.toString();
+    return qs ? `/produits?${qs}` : "/produits";
+  };
 
   return (
     <>
@@ -79,11 +92,14 @@ export default async function ProduitsPage({
             </Link>
           </p>
         ) : (
-          <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
-            {list.map((p) => (
-              <ProductCard key={p.slug} product={p} />
-            ))}
-          </div>
+          <>
+            <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
+              {pageItems.map((p) => (
+                <ProductCard key={p.slug} product={p} />
+              ))}
+            </div>
+            <Pagination page={page} totalPages={totalPages} makeHref={makeHref} />
+          </>
         )}
       </section>
     </>
@@ -99,27 +115,16 @@ function CategoryHero({
   countLabel: string;
 }) {
   return (
-    <section className="relative overflow-hidden">
-      {/* Brand gradient base — always visible, so the header never looks empty
-          if the photo fails to load. */}
-      <div className="absolute inset-0 bg-gradient-to-br from-charcoal via-rosegold-dark to-charcoal" />
-      {/* Category photo layered on top as an enhancement. */}
-      <Image
-        src={category.image}
-        alt=""
-        fill
-        priority
-        sizes="100vw"
-        className="object-cover opacity-40"
-      />
-      <div className="absolute inset-0 bg-gradient-to-t from-charcoal/80 via-charcoal/30 to-transparent" />
+    <section className="relative overflow-hidden bg-gradient-to-br from-cream via-blush to-blush-deep">
+      <div className="pointer-events-none absolute -right-20 -top-24 h-80 w-80 rounded-full bg-rosegold/25 blur-3xl" />
+      <div className="pointer-events-none absolute -bottom-28 -left-16 h-80 w-80 rounded-full bg-rosegold/20 blur-3xl" />
       <div className="animate-fade-up relative mx-auto max-w-7xl px-5 py-20 sm:px-8 sm:py-28">
-        <Breadcrumb current={category.name} />
-        <h1 className="mt-4 font-serif text-5xl text-ivory sm:text-6xl">
+        <Breadcrumb current={category.name} tone="light" />
+        <h1 className="mt-4 font-serif text-5xl text-charcoal sm:text-6xl">
           {category.name}
         </h1>
-        <p className="mt-3 max-w-md text-white/80">{category.tagline}</p>
-        <span className="mt-6 inline-block rounded-full bg-white/15 px-4 py-1.5 text-xs font-semibold uppercase tracking-[0.2em] text-white backdrop-blur">
+        <p className="mt-3 max-w-md text-charcoal-soft">{category.tagline}</p>
+        <span className="mt-6 inline-block rounded-full bg-white/60 px-4 py-1.5 text-xs font-semibold uppercase tracking-[0.2em] text-rosegold backdrop-blur">
           {countLabel}
         </span>
       </div>

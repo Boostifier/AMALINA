@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { useRouter, usePathname, useSearchParams } from "next/navigation";
 import { useEffect, useState } from "react";
 import { useCart } from "@/components/cart-context";
 import type { Category } from "@/lib/products";
@@ -25,8 +25,16 @@ export default function Header({
   hasSale?: boolean;
 }) {
   const { count } = useCart();
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
   const [open, setOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
+
+  // Which sub-nav entry is currently active.
+  const onProduits = pathname === "/produits";
+  const activeCategorie = onProduits ? searchParams.get("categorie") : null;
+  const onAllProducts = onProduits && !activeCategorie;
+  const onPromo = pathname === "/promotions";
 
   // Lock body scroll while the mobile menu is open.
   useEffect(() => {
@@ -153,7 +161,12 @@ export default function Header({
             <>
               <Link
                 href="/promotions"
-                className="shrink-0 rounded-full bg-rosegold px-3 py-1 text-xs font-semibold uppercase tracking-[0.14em] text-white transition-colors hover:bg-rosegold-dark"
+                aria-current={onPromo ? "page" : undefined}
+                className={`shrink-0 rounded-full px-3 py-1 text-xs font-semibold uppercase tracking-[0.14em] transition-colors ${
+                  onPromo
+                    ? "bg-rosegold-dark text-white"
+                    : "bg-rosegold text-white hover:bg-rosegold-dark"
+                }`}
               >
                 Promo
               </Link>
@@ -162,20 +175,31 @@ export default function Header({
           )}
           <Link
             href="/produits"
-            className="shrink-0 text-xs font-semibold uppercase tracking-[0.18em] text-rosegold transition-colors hover:text-rosegold-dark"
+            aria-current={onAllProducts ? "page" : undefined}
+            className={`shrink-0 text-xs font-semibold uppercase tracking-[0.18em] text-rosegold transition-colors hover:text-rosegold-dark ${
+              onAllProducts ? "underline decoration-2 underline-offset-[6px]" : ""
+            }`}
           >
             Tous les produits
           </Link>
           <span className="h-3.5 w-px shrink-0 bg-blush-deep/50" aria-hidden />
-          {categories.map((c) => (
-            <Link
-              key={c.slug}
-              href={`/produits?categorie=${c.slug}`}
-              className="shrink-0 text-xs font-medium uppercase tracking-[0.14em] text-charcoal-soft transition-colors hover:text-rosegold"
-            >
-              {c.name}
-            </Link>
-          ))}
+          {categories.map((c) => {
+            const active = activeCategorie === c.slug;
+            return (
+              <Link
+                key={c.slug}
+                href={`/produits?categorie=${c.slug}`}
+                aria-current={active ? "page" : undefined}
+                className={`shrink-0 text-xs uppercase tracking-[0.14em] transition-colors ${
+                  active
+                    ? "font-semibold text-rosegold underline decoration-2 underline-offset-[6px]"
+                    : "font-medium text-charcoal-soft hover:text-rosegold"
+                }`}
+              >
+                {c.name}
+              </Link>
+            );
+          })}
         </nav>
       </div>
 
@@ -251,7 +275,12 @@ export default function Header({
                   <Link
                     href={`/produits?categorie=${c.slug}`}
                     onClick={() => setOpen(false)}
-                    className="block rounded-xl px-4 py-2.5 text-sm text-charcoal-soft transition-colors hover:bg-blush hover:text-rosegold"
+                    aria-current={activeCategorie === c.slug ? "page" : undefined}
+                    className={`block rounded-xl px-4 py-2.5 text-sm transition-colors ${
+                      activeCategorie === c.slug
+                        ? "bg-blush font-semibold text-rosegold"
+                        : "text-charcoal-soft hover:bg-blush hover:text-rosegold"
+                    }`}
                   >
                     {c.name}
                   </Link>
