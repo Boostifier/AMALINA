@@ -75,6 +75,7 @@ function parseProduct(fd: FormData) {
 function revalidateCatalog() {
   revalidatePath("/", "layout");
   revalidatePath("/produits");
+  revalidatePath("/promotions");
   revalidatePath("/admin/produits");
 }
 

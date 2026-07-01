@@ -5,7 +5,7 @@ import "./globals.css";
 import { CartProvider } from "@/components/cart-context";
 import Header from "@/components/header";
 import Footer from "@/components/footer";
-import { getCategories } from "@/lib/catalog";
+import { getCategories, getSaleProducts } from "@/lib/catalog";
 import { getCurrentUser } from "@/lib/auth";
 
 const geistSans = Geist({
@@ -55,9 +55,10 @@ export default async function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  const [categories, user] = await Promise.all([
+  const [categories, user, saleProducts] = await Promise.all([
     getCategories(),
     getCurrentUser(),
+    getSaleProducts(),
   ]);
 
   return (
@@ -71,6 +72,7 @@ export default async function RootLayout({
             categories={categories}
             userEmail={user?.email ?? null}
             isAdmin={user?.profile?.is_admin ?? false}
+            hasSale={saleProducts.length > 0}
           />
           <main className="flex-1">{children}</main>
           <Footer categories={categories} />

@@ -1,6 +1,7 @@
 import "server-only";
 import { cache } from "react";
 import { createClient } from "@/lib/supabase/server";
+import { isOnSale } from "@/lib/products";
 import type { Category, Product } from "@/lib/products";
 import type { CategoryRow, ProductRow } from "@/lib/supabase/types";
 
@@ -53,6 +54,11 @@ export const getProducts = cache(async (): Promise<Product[]> => {
 export async function getBestsellers(): Promise<Product[]> {
   const products = await getProducts();
   return products.filter((p) => p.bestseller);
+}
+
+export async function getSaleProducts(): Promise<Product[]> {
+  const products = await getProducts();
+  return products.filter(isOnSale);
 }
 
 export async function getProduct(slug: string): Promise<Product | undefined> {

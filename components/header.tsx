@@ -17,10 +17,12 @@ export default function Header({
   categories,
   userEmail,
   isAdmin = false,
+  hasSale = false,
 }: {
   categories: Category[];
   userEmail: string | null;
   isAdmin?: boolean;
+  hasSale?: boolean;
 }) {
   const { count } = useCart();
   const [open, setOpen] = useState(false);
@@ -147,6 +149,17 @@ export default function Header({
         <nav
           className={`mx-auto flex max-w-7xl items-center justify-center gap-7 overflow-x-auto px-5 transition-[padding] duration-300 sm:px-8 ${barPad}`}
         >
+          {hasSale && (
+            <>
+              <Link
+                href="/promotions"
+                className="shrink-0 rounded-full bg-rosegold px-3 py-1 text-xs font-semibold uppercase tracking-[0.14em] text-white transition-colors hover:bg-rosegold-dark"
+              >
+                Promo
+              </Link>
+              <span className="h-3.5 w-px shrink-0 bg-blush-deep/50" aria-hidden />
+            </>
+          )}
           <Link
             href="/produits"
             className="shrink-0 text-xs font-semibold uppercase tracking-[0.18em] text-rosegold transition-colors hover:text-rosegold-dark"
@@ -205,6 +218,18 @@ export default function Header({
               </li>
             ))}
           </ul>
+
+          {hasSale && (
+            <div className="mt-4">
+              <Link
+                href="/promotions"
+                onClick={() => setOpen(false)}
+                className="flex items-center justify-center rounded-xl bg-rosegold px-4 py-3 text-sm font-semibold uppercase tracking-widest text-white transition-colors hover:bg-rosegold-dark"
+              >
+                Promotions
+              </Link>
+            </div>
+          )}
 
           <div className="mt-4 border-t border-blush-deep/40 pt-4">
             <p className="px-4 pb-2 text-xs font-semibold uppercase tracking-widest text-mauve">
