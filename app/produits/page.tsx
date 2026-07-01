@@ -1,13 +1,10 @@
 import Link from "next/link";
 import type { Metadata } from "next";
-import {
-  getCategories,
-  getProducts,
-  getCategory,
-  productsByCategory,
-} from "@/lib/catalog";
-import type { Category } from "@/lib/products";
+import { getCategories, getProducts, getCategory } from "@/lib/catalog";
+import { applyProductFilters, listBrands, type Category } from "@/lib/products";
 import ProductCard from "@/components/product-card";
+import ProductFilters from "@/components/product-filters";
+import BrandSidebar from "@/components/brand-sidebar";
 import Pagination, { PAGE_SIZE } from "@/components/pagination";
 
 export const metadata: Metadata = {
@@ -19,26 +16,27 @@ export const metadata: Metadata = {
 export default async function ProduitsPage({
   searchParams,
 }: {
-  searchParams: Promise<{ categorie?: string; q?: string; page?: string }>;
+  searchParams: Promise<{
+    categorie?: string;
+    marque?: string;
+    q?: string;
+    sort?: string;
+    page?: string;
+  }>;
 }) {
-  const { categorie, q, page: pageParam } = await searchParams;
-  const [categories, activeCat] = await Promise.all([
+  const { categorie, marque, q, sort, page: pageParam } = await searchParams;
+  const [categories, allProducts, activeCat] = await Promise.all([
     getCategories(),
+    getProducts(),
     categorie ? getCategory(categorie) : Promise.resolve(undefined),
   ]);
 
-  let list = activeCat
-    ? await productsByCategory(activeCat.slug)
-    : await getProducts();
-
-  const query = (q ?? "").trim().toLowerCase();
-  if (query) {
-    list = list.filter((p) =>
-      [p.name, p.brand, p.shortDescription, p.description].some((f) =>
-        f?.toLowerCase().includes(query),
-      ),
-    );
-  }
+  // Brands shown reflect the current view (category + search), excluding the
+  // brand filter itself so the list doesn't collapse to the selected brand.
+  const brandScope = applyProductFilters(allProducts, { q, categorie });
+  const brands = listBrands(brandScope);
+  const list = applyProductFilters(allProducts, { q, categorie, marque, sort });
+  const query = (q ?? "").trim();
 
   const count = list.length;
   const countLabel = `${count} produit${count > 1 ? "s" : ""}`;
@@ -50,7 +48,9 @@ export default async function ProduitsPage({
   const makeHref = (p: number) => {
     const sp = new URLSearchParams();
     if (categorie) sp.set("categorie", categorie);
+    if (marque) sp.set("marque", marque);
     if (q) sp.set("q", q);
+    if (sort) sp.set("sort", sort);
     if (p > 1) sp.set("page", String(p));
     const qs = sp.toString();
     return qs ? `/produits?${qs}` : "/produits";
@@ -68,39 +68,31 @@ export default async function ProduitsPage({
       )}
 
       <section className="mx-auto max-w-7xl px-5 py-14 sm:px-8">
-        {/* Filter pills */}
-        <div className="mb-12 flex flex-wrap justify-center gap-2.5">
-          <FilterPill href="/produits" active={!activeCat && !query}>
-            Tous
-          </FilterPill>
-          {categories.map((c) => (
-            <FilterPill
-              key={c.slug}
-              href={`/produits?categorie=${c.slug}`}
-              active={activeCat?.slug === c.slug}
-            >
-              {c.name}
-            </FilterPill>
-          ))}
-        </div>
+        <div className="grid gap-8 lg:grid-cols-[220px_1fr]">
+          <BrandSidebar brands={brands} total={brandScope.length} />
 
-        {count === 0 ? (
-          <p className="py-16 text-center text-charcoal-soft">
-            Aucun produit ne correspond{query ? ` à « ${q} »` : ""}.{" "}
-            <Link href="/produits" className="text-rosegold hover:underline">
-              Voir tout
-            </Link>
-          </p>
-        ) : (
-          <>
-            <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
-              {pageItems.map((p) => (
-                <ProductCard key={p.slug} product={p} />
-              ))}
-            </div>
-            <Pagination page={page} totalPages={totalPages} makeHref={makeHref} />
-          </>
-        )}
+          <div>
+            <ProductFilters categories={categories} />
+
+            {count === 0 ? (
+              <p className="py-16 text-center text-charcoal-soft">
+                Aucun produit ne correspond{query ? ` à « ${q} »` : ""}.{" "}
+                <Link href="/produits" className="text-rosegold hover:underline">
+                  Voir tout
+                </Link>
+              </p>
+            ) : (
+              <>
+                <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+                  {pageItems.map((p) => (
+                    <ProductCard key={p.slug} product={p} />
+                  ))}
+                </div>
+                <Pagination page={page} totalPages={totalPages} makeHref={makeHref} />
+              </>
+            )}
+          </div>
+        </div>
       </section>
     </>
   );
@@ -195,28 +187,5 @@ function Breadcrumb({
         {current}
       </span>
     </nav>
-  );
-}
-
-function FilterPill({
-  href,
-  active,
-  children,
-}: {
-  href: string;
-  active: boolean;
-  children: React.ReactNode;
-}) {
-  return (
-    <Link
-      href={href}
-      className={`rounded-full px-5 py-2 text-sm font-medium transition-colors ${
-        active
-          ? "bg-rosegold text-white"
-          : "border border-blush-deep/60 bg-white/50 text-charcoal-soft hover:border-rosegold/50 hover:text-rosegold"
-      }`}
-    >
-      {children}
-    </Link>
   );
 }

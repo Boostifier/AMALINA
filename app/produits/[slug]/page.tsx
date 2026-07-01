@@ -89,7 +89,7 @@ export default async function ProductPage({
               <span className="text-lg text-mauve line-through">
                 {formatPrice(product.price)}
               </span>
-              <span className="rounded-full bg-rosegold px-3 py-1 text-xs font-semibold uppercase tracking-widest text-white">
+              <span className="inline-flex items-center gap-1.5 rounded-full bg-red-600 px-3 py-1.5 text-xs font-bold uppercase tracking-wide text-white shadow-sm ring-1 ring-white/25">
                 Promo −{discountPercent(product)}%
               </span>
             </div>

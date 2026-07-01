@@ -1,8 +1,10 @@
 import Link from "next/link";
 import type { Metadata } from "next";
-import { getSaleProducts } from "@/lib/catalog";
-import { discountPercent } from "@/lib/products";
+import { getSaleProducts, getCategories } from "@/lib/catalog";
+import { applyProductFilters, listBrands, discountPercent } from "@/lib/products";
 import ProductCard from "@/components/product-card";
+import ProductFilters from "@/components/product-filters";
+import BrandSidebar from "@/components/brand-sidebar";
 import Pagination, { PAGE_SIZE } from "@/components/pagination";
 
 export const metadata: Metadata = {
@@ -14,19 +16,51 @@ export const metadata: Metadata = {
 export default async function PromotionsPage({
   searchParams,
 }: {
-  searchParams: Promise<{ page?: string }>;
+  searchParams: Promise<{
+    categorie?: string;
+    marque?: string;
+    q?: string;
+    sort?: string;
+    page?: string;
+  }>;
 }) {
-  const { page: pageParam } = await searchParams;
-  const products = await getSaleProducts();
-  const maxDiscount = products.reduce(
+  const { categorie, marque, q, sort, page: pageParam } = await searchParams;
+  const [allSale, categories] = await Promise.all([
+    getSaleProducts(),
+    getCategories(),
+  ]);
+
+  const hasAnyPromo = allSale.length > 0;
+  const maxDiscount = allSale.reduce(
     (max, p) => Math.max(max, discountPercent(p)),
     0,
   );
+  // Only offer categories/brands that actually have something on sale.
+  const promoCategories = categories.filter((c) =>
+    allSale.some((p) => p.category === c.slug),
+  );
+  // Brands reflect the current view (category + search) within the sale set,
+  // excluding the brand filter itself.
+  const brandScope = applyProductFilters(allSale, { q, categorie });
+  const promoBrands = listBrands(brandScope);
 
-  const totalPages = Math.max(1, Math.ceil(products.length / PAGE_SIZE));
+  const list = applyProductFilters(allSale, { q, categorie, marque, sort });
+  const count = list.length;
+
+  const totalPages = Math.max(1, Math.ceil(count / PAGE_SIZE));
   const page = Math.min(Math.max(1, Math.floor(Number(pageParam) || 1)), totalPages);
-  const pageItems = products.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
-  const makeHref = (p: number) => (p > 1 ? `/promotions?page=${p}` : "/promotions");
+  const pageItems = list.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
+
+  const makeHref = (p: number) => {
+    const sp = new URLSearchParams();
+    if (categorie) sp.set("categorie", categorie);
+    if (marque) sp.set("marque", marque);
+    if (q) sp.set("q", q);
+    if (sort) sp.set("sort", sort);
+    if (p > 1) sp.set("page", String(p));
+    const qs = sp.toString();
+    return qs ? `/promotions?${qs}` : "/promotions";
+  };
 
   return (
     <>
@@ -48,10 +82,10 @@ export default async function PromotionsPage({
             stocks disponibles.
           </p>
 
-          {products.length > 0 && (
+          {hasAnyPromo && (
             <div className="mt-8 flex flex-wrap items-center justify-center gap-3">
               <span className="rounded-full bg-white/15 px-4 py-2 text-sm font-medium text-white backdrop-blur">
-                {products.length} produit{products.length > 1 ? "s" : ""} en promo
+                {allSale.length} produit{allSale.length > 1 ? "s" : ""} en promo
               </span>
               {maxDiscount > 0 && (
                 <span className="rounded-full bg-white px-4 py-2 text-sm font-semibold text-rosegold-dark">
@@ -65,7 +99,7 @@ export default async function PromotionsPage({
 
       {/* Products */}
       <section className="mx-auto max-w-7xl px-5 py-16 sm:px-8">
-        {products.length === 0 ? (
+        {!hasAnyPromo ? (
           <div className="mx-auto max-w-md rounded-3xl border border-blush-deep/50 bg-white/70 px-8 py-16 text-center">
             <span className="text-2xl text-rosegold">✦</span>
             <p className="mt-4 font-serif text-2xl text-charcoal">
@@ -82,14 +116,31 @@ export default async function PromotionsPage({
             </Link>
           </div>
         ) : (
-          <>
-            <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
-              {pageItems.map((p) => (
-                <ProductCard key={p.slug} product={p} />
-              ))}
+          <div className="grid gap-8 lg:grid-cols-[220px_1fr]">
+            <BrandSidebar brands={promoBrands} total={brandScope.length} />
+
+            <div>
+              <ProductFilters categories={promoCategories} />
+
+              {count === 0 ? (
+                <p className="py-16 text-center text-charcoal-soft">
+                  Aucune promotion ne correspond à votre recherche.{" "}
+                  <Link href="/promotions" className="text-rosegold hover:underline">
+                    Voir toutes les promos
+                  </Link>
+                </p>
+              ) : (
+                <>
+                  <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+                    {pageItems.map((p) => (
+                      <ProductCard key={p.slug} product={p} />
+                    ))}
+                  </div>
+                  <Pagination page={page} totalPages={totalPages} makeHref={makeHref} />
+                </>
+              )}
             </div>
-            <Pagination page={page} totalPages={totalPages} makeHref={makeHref} />
-          </>
+          </div>
         )}
       </section>
     </>

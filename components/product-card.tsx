@@ -41,8 +41,8 @@ export default function ProductCard({ product }: { product: Product }) {
         {/* Badges */}
         <div className="absolute left-3 top-3 flex flex-col gap-2">
           {onSale && (
-            <span className="rounded-full bg-rosegold px-3 py-1 text-[0.62rem] font-semibold uppercase tracking-widest text-white shadow-sm">
-              −{discountPercent(product)}%
+            <span className="inline-flex items-center gap-1 rounded-full bg-red-600 px-3 py-1.5 text-[0.62rem] font-bold uppercase tracking-wide text-white shadow-md ring-1 ring-white/25">
+              Promo −{discountPercent(product)}%
             </span>
           )}
           {product.bestseller && (

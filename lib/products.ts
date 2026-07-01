@@ -44,3 +44,60 @@ export function discountPercent(p: Priced): number {
   if (!isOnSale(p)) return 0;
   return Math.round((1 - (p.salePrice as number) / p.price) * 100);
 }
+
+export type SortKey = "" | "price-asc" | "price-desc" | "name";
+
+export type ProductFilterOptions = {
+  q?: string;
+  categorie?: string;
+  marque?: string;
+  sort?: SortKey | string;
+};
+
+export type BrandCount = { name: string; count: number };
+
+/** Distinct, non-empty brands with product counts, sorted by name (fr). */
+export function listBrands(products: Product[]): BrandCount[] {
+  const map = new Map<string, number>();
+  for (const p of products) {
+    const b = p.brand?.trim();
+    if (b) map.set(b, (map.get(b) ?? 0) + 1);
+  }
+  return [...map.entries()]
+    .map(([name, count]) => ({ name, count }))
+    .sort((a, b) => a.name.localeCompare(b.name, "fr"));
+}
+
+/**
+ * Filter (by category + free-text query) and sort a product list. Sorting is by
+ * the effective (sale-aware) price so it matches what the customer sees.
+ * Client-safe: used by both the storefront pages and the filter toolbar.
+ */
+export function applyProductFilters(
+  products: Product[],
+  { q, categorie, marque, sort }: ProductFilterOptions,
+): Product[] {
+  let list = products;
+
+  if (categorie) list = list.filter((p) => p.category === categorie);
+  if (marque) list = list.filter((p) => p.brand === marque);
+
+  const query = (q ?? "").trim().toLowerCase();
+  if (query) {
+    list = list.filter((p) =>
+      [p.name, p.brand, p.shortDescription, p.description].some((f) =>
+        f?.toLowerCase().includes(query),
+      ),
+    );
+  }
+
+  if (sort === "price-asc") {
+    list = [...list].sort((a, b) => effectivePrice(a) - effectivePrice(b));
+  } else if (sort === "price-desc") {
+    list = [...list].sort((a, b) => effectivePrice(b) - effectivePrice(a));
+  } else if (sort === "name") {
+    list = [...list].sort((a, b) => a.name.localeCompare(b.name, "fr"));
+  }
+
+  return list;
+}
