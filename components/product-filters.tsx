@@ -2,9 +2,10 @@
 
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import type { Category } from "@/lib/products";
+import SortDropdown from "@/components/sort-dropdown";
 
 const SORT_OPTIONS: { value: string; label: string }[] = [
-  { value: "", label: "Tri : populaire" },
+  { value: "", label: "Populaire" },
   { value: "price-asc", label: "Prix croissant" },
   { value: "price-desc", label: "Prix décroissant" },
   { value: "name", label: "Nom (A→Z)" },
@@ -76,47 +77,37 @@ export default function ProductFilters({
         </form>
 
         {/* Sort */}
-        <label className="relative shrink-0">
-          <span className="sr-only">Trier</span>
-          <select
-            value={currentSort}
-            onChange={(e) => setParam("sort", e.target.value)}
-            className="h-12 w-full appearance-none rounded-full border border-blush-deep/60 bg-white/70 pl-5 pr-10 text-sm text-charcoal-soft focus:border-rosegold focus:outline-none sm:w-56"
-          >
-            {SORT_OPTIONS.map((o) => (
-              <option key={o.value} value={o.value}>
-                {o.label}
-              </option>
-            ))}
-          </select>
-          <span className="pointer-events-none absolute right-4 top-1/2 -translate-y-1/2 text-mauve">
-            <ChevronIcon />
-          </span>
-        </label>
+        <SortDropdown
+          value={currentSort}
+          options={SORT_OPTIONS}
+          onChange={(v) => setParam("sort", v)}
+        />
       </div>
 
-      {/* Category pills */}
+      {/* Category segmented control */}
       {categories.length > 0 && (
-        <div className="flex flex-wrap gap-2.5">
-          <Pill active={!currentCategorie} onClick={() => setParam("categorie", "")}>
-            Toutes
-          </Pill>
-          {categories.map((c) => (
-            <Pill
-              key={c.slug}
-              active={currentCategorie === c.slug}
-              onClick={() => setParam("categorie", c.slug)}
-            >
-              {c.name}
-            </Pill>
-          ))}
+        <div className="-mx-1 overflow-x-auto px-1 pb-1 sm:mx-0 sm:overflow-visible sm:px-0 sm:pb-0">
+          <div className="inline-flex gap-1 rounded-full border border-blush-deep/50 bg-white/60 p-1 shadow-[0_10px_28px_-24px_rgba(43,36,34,0.5)] sm:flex sm:w-full">
+            <Segment active={!currentCategorie} onClick={() => setParam("categorie", "")}>
+              Toutes
+            </Segment>
+            {categories.map((c) => (
+              <Segment
+                key={c.slug}
+                active={currentCategorie === c.slug}
+                onClick={() => setParam("categorie", c.slug)}
+              >
+                {c.name}
+              </Segment>
+            ))}
+          </div>
         </div>
       )}
     </div>
   );
 }
 
-function Pill({
+function Segment({
   active,
   onClick,
   children,
@@ -130,10 +121,10 @@ function Pill({
       type="button"
       onClick={onClick}
       aria-pressed={active}
-      className={`rounded-full px-5 py-2 text-sm font-medium transition-colors ${
+      className={`whitespace-nowrap rounded-full px-4 py-2 text-center text-sm font-medium transition-colors sm:flex-1 ${
         active
-          ? "bg-rosegold text-white"
-          : "border border-blush-deep/60 bg-white/50 text-charcoal-soft hover:border-rosegold/50 hover:text-rosegold"
+          ? "bg-rosegold text-white shadow-sm"
+          : "text-charcoal-soft hover:text-rosegold"
       }`}
     >
       {children}
@@ -160,20 +151,3 @@ function SearchIcon() {
   );
 }
 
-function ChevronIcon() {
-  return (
-    <svg
-      width="14"
-      height="14"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      aria-hidden
-    >
-      <path d="m6 9 6 6 6-6" />
-    </svg>
-  );
-}

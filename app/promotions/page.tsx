@@ -119,7 +119,7 @@ export default async function PromotionsPage({
           <div className="grid gap-8 lg:grid-cols-[220px_1fr]">
             <BrandSidebar brands={promoBrands} total={brandScope.length} />
 
-            <div>
+            <div className="min-w-0">
               <ProductFilters categories={promoCategories} />
 
               {count === 0 ? (

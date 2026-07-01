@@ -27,7 +27,7 @@ export default function BrandSidebar({
   }
 
   return (
-    <aside className="lg:sticky lg:top-28 lg:h-max">
+    <aside className="min-w-0 lg:sticky lg:top-28 lg:h-max">
       <div className="lg:rounded-2xl lg:border lg:border-blush-deep/40 lg:bg-white/60 lg:p-5 lg:shadow-[0_12px_34px_-28px_rgba(43,36,34,0.5)]">
         <h2 className="mb-4 flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.25em] text-rosegold">
           <TagIcon />
