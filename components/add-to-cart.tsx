@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useCart } from "@/components/cart-context";
 import type { Product } from "@/lib/products";
+import { effectivePrice } from "@/lib/products";
 
 export default function AddToCart({ product }: { product: Product }) {
   const { add } = useCart();
@@ -11,7 +12,7 @@ export default function AddToCart({ product }: { product: Product }) {
 
   function handleAdd() {
     add(
-      { slug: product.slug, name: product.name, price: product.price },
+      { slug: product.slug, name: product.name, price: effectivePrice(product) },
       qty
     );
     setAdded(true);

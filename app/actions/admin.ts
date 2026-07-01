@@ -8,6 +8,7 @@ import { createAdminClient } from "@/lib/supabase/admin";
 import { uploadImage, UploadError } from "@/lib/supabase/upload";
 import { requireAdmin } from "@/lib/auth";
 import { ORDER_STATUSES } from "@/lib/orders";
+import { effectivePrice } from "@/lib/products";
 import type { OrderStatus } from "@/lib/supabase/types";
 
 export type AdminFormState = { error?: string } | undefined;
@@ -19,6 +20,19 @@ function str(fd: FormData, key: string): string {
 function num(fd: FormData, key: string): number {
   const n = Number(fd.get(key));
   return Number.isFinite(n) ? n : 0;
+}
+
+/**
+ * Sale price is optional. Return the parsed number only when it is a valid,
+ * positive value strictly below the regular price; otherwise null (no sale).
+ */
+function parseSalePrice(fd: FormData): number | null {
+  const raw = str(fd, "sale_price");
+  if (!raw) return null;
+  const sale = Number(raw);
+  const price = num(fd, "price");
+  if (!Number.isFinite(sale) || sale <= 0 || sale >= price) return null;
+  return sale;
 }
 
 /**
@@ -43,6 +57,7 @@ function parseProduct(fd: FormData) {
     brand: str(fd, "brand"),
     category_slug: str(fd, "category_slug"),
     price: num(fd, "price"),
+    sale_price: parseSalePrice(fd),
     short_description: str(fd, "short_description"),
     description: str(fd, "description"),
     details: str(fd, "details")
@@ -195,14 +210,14 @@ export async function createOrder(
   const supabase = await createClient();
   const { data: products } = await supabase
     .from("products")
-    .select("slug, name, price, active")
+    .select("slug, name, price, sale_price, active")
     .in("slug", [...wanted.keys()]);
 
   const lines = (products ?? [])
     .filter((p) => p.active)
     .map((p) => {
       const qty = wanted.get(p.slug)!;
-      const unit = Number(p.price);
+      const unit = effectivePrice({ price: Number(p.price), salePrice: p.sale_price });
       return {
         product_slug: p.slug,
         product_name: p.name,

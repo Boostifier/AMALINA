@@ -2,7 +2,7 @@
 
 import { useMemo, useState, useTransition } from "react";
 import { createOrder } from "@/app/actions/admin";
-import { formatPrice, type Product } from "@/lib/products";
+import { formatPrice, effectivePrice, type Product } from "@/lib/products";
 import { ORDER_STATUSES, STATUS_LABELS } from "@/lib/orders";
 import type { OrderStatus } from "@/lib/supabase/types";
 
@@ -43,7 +43,10 @@ export default function AdminOrderForm({ products }: { products: Product[] }) {
   }
 
   const subtotal = lines.reduce(
-    (s, l) => s + (bySlug.get(l.slug)?.price ?? 0) * l.qty,
+    (s, l) => {
+      const p = bySlug.get(l.slug);
+      return s + (p ? effectivePrice(p) : 0) * l.qty;
+    },
     0
   );
   const shipping = subtotal === 0 || subtotal >= 400 ? 0 : 3;
@@ -122,7 +125,7 @@ export default function AdminOrderForm({ products }: { products: Product[] }) {
             <option value="">Choisir un produit…</option>
             {products.map((p) => (
               <option key={p.slug} value={p.slug}>
-                {p.name} — {formatPrice(p.price)}
+                {p.name} — {formatPrice(effectivePrice(p))}
               </option>
             ))}
           </select>
@@ -154,7 +157,7 @@ export default function AdminOrderForm({ products }: { products: Product[] }) {
                     className="h-9 w-16 rounded-lg border border-blush-deep/60 bg-white px-2 text-center text-sm focus:border-rosegold focus:outline-none"
                   />
                   <span className="w-24 text-right text-charcoal-soft">
-                    {formatPrice(p.price * l.qty)}
+                    {formatPrice(effectivePrice(p) * l.qty)}
                   </span>
                   <button
                     type="button"

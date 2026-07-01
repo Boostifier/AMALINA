@@ -57,6 +57,7 @@ export default function ProductForm({
           </select>
         </div>
         <Text name="price" label="Prix (DT) *" type="number" step="0.01" defaultValue={product ? String(product.price) : ""} />
+        <Text name="sale_price" label="Prix promo (DT)" type="number" step="0.01" defaultValue={product?.sale_price != null ? String(product.sale_price) : ""} hint="Laisser vide si pas en promo. Doit être inférieur au prix." />
         <Text name="stock" label="Stock" type="number" defaultValue={product ? String(product.stock) : "0"} />
         <Text name="sort_order" label="Ordre d'affichage" type="number" defaultValue={product ? String(product.sort_order) : "0"} />
       </div>

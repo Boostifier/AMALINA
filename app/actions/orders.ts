@@ -4,6 +4,7 @@ import { randomUUID } from "crypto";
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
 import { sendOrderEmails } from "@/lib/email";
+import { effectivePrice } from "@/lib/products";
 
 export type CheckoutCustomer = {
   full_name: string;
@@ -59,14 +60,14 @@ export async function placeOrder(
   // Prices and names are taken from the database, never from the client.
   const { data: products } = await supabase
     .from("products")
-    .select("slug, name, price, active")
+    .select("slug, name, price, sale_price, active")
     .in("slug", [...wanted.keys()]);
 
   const lines = (products ?? [])
     .filter((p) => p.active)
     .map((p) => {
       const qty = wanted.get(p.slug)!;
-      const unit = Number(p.price);
+      const unit = effectivePrice({ price: Number(p.price), salePrice: p.sale_price });
       return {
         product_slug: p.slug,
         product_name: p.name,

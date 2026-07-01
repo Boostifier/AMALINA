@@ -61,7 +61,16 @@ export default async function AdminProductsPage() {
                 </td>
                 <td className="px-4 py-3 text-charcoal-soft">{p.brand}</td>
                 <td className="px-4 py-3 text-charcoal-soft">{p.category_slug}</td>
-                <td className="px-4 py-3 text-right text-charcoal">{formatPrice(Number(p.price))}</td>
+                <td className="px-4 py-3 text-right text-charcoal">
+                  {p.sale_price != null ? (
+                    <span className="flex items-baseline justify-end gap-2">
+                      <span className="font-medium text-rosegold-dark">{formatPrice(Number(p.sale_price))}</span>
+                      <span className="text-xs text-mauve line-through">{formatPrice(Number(p.price))}</span>
+                    </span>
+                  ) : (
+                    formatPrice(Number(p.price))
+                  )}
+                </td>
                 <td className="px-4 py-3 text-right text-charcoal-soft">{p.stock}</td>
                 <td className="px-4 py-3">
                   <span

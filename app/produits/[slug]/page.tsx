@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
-import { formatPrice } from "@/lib/products";
+import { formatPrice, effectivePrice, isOnSale, discountPercent } from "@/lib/products";
 import {
   getProduct,
   getCategory,
@@ -81,9 +81,23 @@ export default async function ProductPage({
           <h1 className="mt-3 font-serif text-4xl text-charcoal sm:text-5xl">
             {product.name}
           </h1>
-          <p className="mt-4 text-2xl font-medium text-rosegold-dark">
-            {formatPrice(product.price)}
-          </p>
+          {isOnSale(product) ? (
+            <div className="mt-4 flex flex-wrap items-baseline gap-3">
+              <span className="text-2xl font-medium text-rosegold-dark">
+                {formatPrice(effectivePrice(product))}
+              </span>
+              <span className="text-lg text-mauve line-through">
+                {formatPrice(product.price)}
+              </span>
+              <span className="rounded-full bg-rosegold px-3 py-1 text-xs font-semibold uppercase tracking-widest text-white">
+                Promo −{discountPercent(product)}%
+              </span>
+            </div>
+          ) : (
+            <p className="mt-4 text-2xl font-medium text-rosegold-dark">
+              {formatPrice(product.price)}
+            </p>
+          )}
           <p className="mt-6 leading-relaxed text-charcoal-soft">
             {product.description}
           </p>

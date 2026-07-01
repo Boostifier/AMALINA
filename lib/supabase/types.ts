@@ -29,6 +29,7 @@ export type ProductRow = {
   brand: string;
   category_slug: string;
   price: number;
+  sale_price: number | null;
   short_description: string;
   description: string;
   details: string[];

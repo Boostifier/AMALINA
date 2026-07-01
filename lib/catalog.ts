@@ -20,6 +20,7 @@ function toProduct(row: ProductRow): Product {
     brand: row.brand,
     category: row.category_slug,
     price: Number(row.price),
+    salePrice: row.sale_price == null ? undefined : Number(row.sale_price),
     shortDescription: row.short_description,
     description: row.description,
     details: row.details ?? [],

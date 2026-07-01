@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useState } from "react";
 import type { Product } from "@/lib/products";
-import { formatPrice } from "@/lib/products";
+import { formatPrice, effectivePrice, isOnSale, discountPercent } from "@/lib/products";
 import ProductImage from "@/components/product-image";
 import { useCart } from "@/components/cart-context";
 
@@ -11,13 +11,14 @@ export default function ProductCard({ product }: { product: Product }) {
   const { add } = useCart();
   const [added, setAdded] = useState(false);
   const outOfStock = product.stock === 0;
+  const onSale = isOnSale(product);
 
   function handleAdd(e: React.MouseEvent) {
     // The card is a link; keep the click on the button only.
     e.preventDefault();
     e.stopPropagation();
     if (outOfStock) return;
-    add({ slug: product.slug, name: product.name, price: product.price });
+    add({ slug: product.slug, name: product.name, price: effectivePrice(product) });
     setAdded(true);
     window.setTimeout(() => setAdded(false), 1500);
   }
@@ -35,6 +36,11 @@ export default function ProductCard({ product }: { product: Product }) {
 
         {/* Badges */}
         <div className="absolute left-3 top-3 flex flex-col gap-2">
+          {onSale && (
+            <span className="rounded-full bg-rosegold px-3 py-1 text-[0.62rem] font-semibold uppercase tracking-widest text-white shadow-sm">
+              Promo −{discountPercent(product)}%
+            </span>
+          )}
           {product.bestseller && (
             <span className="rounded-full bg-white/90 px-3 py-1 text-[0.62rem] font-semibold uppercase tracking-widest text-rosegold shadow-sm backdrop-blur">
               Best-seller
@@ -75,9 +81,20 @@ export default function ProductCard({ product }: { product: Product }) {
           {product.shortDescription}
         </p>
         <div className="mt-4 flex items-center justify-between border-t border-blush-deep/30 pt-4">
-          <span className="font-serif text-lg text-rosegold-dark">
-            {formatPrice(product.price)}
-          </span>
+          {onSale ? (
+            <span className="flex items-baseline gap-2">
+              <span className="font-serif text-lg text-rosegold-dark">
+                {formatPrice(effectivePrice(product))}
+              </span>
+              <span className="text-sm text-mauve line-through">
+                {formatPrice(product.price)}
+              </span>
+            </span>
+          ) : (
+            <span className="font-serif text-lg text-rosegold-dark">
+              {formatPrice(product.price)}
+            </span>
+          )}
           <span className="inline-flex items-center gap-1 text-sm font-medium text-rosegold transition-all group-hover:gap-2">
             Voir
             <ArrowIcon />
